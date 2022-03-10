@@ -1,0 +1,88 @@
+specVersion: 0.0.1
+description: None
+repository: ''
+schema: ./schema.graphql
+network:
+  endpoint: wss://beresheet.edgewa.re/
+  types:
+    HashFunction: 
+      _enum: [PoseidonDefault PoseidonExp3 PoseidonExp5 PoseidonExp17 MiMC Blake2 Sha256]
+      TreeId: u32
+    Manager: 
+      accountId: AccountId
+      required: bool
+    MerkleTree:
+      leaf_count: u32
+      max_leaves: u32
+      depth: u8
+      root_hash: ScalarData
+      edge_nodes: Vec<ScalarData>
+      hasher: HashFunction
+      should_store_leaves: bool
+    CurrencyId: u64
+    Amount: i128
+    AmountOf: Amount
+    CurrencyIdOf: CurrencyId
+    ScalarData: [u8; 32]
+    Nullifier: ScalarData
+    Commitment: ScalarData
+    MixerInfo:
+      minimum_deposit_length_for_reward: BlockNumber
+      fixed_deposit_size: Balance
+      currency_id: CurrencyIdOf
+    WithdrawProof:
+      mixer_id: TreeId
+      cached_block: BlockNumber
+      cached_root: ScalarData
+      comms: Vec<Commitment>
+      nullifier_hash: ScalarData
+      proof_bytes: Vec<u8>
+      leaf_index_commitments: Vec<Commitment>
+      proof_commitments: Vec<Commitment>
+      recipient: Option<AccountId>
+      relayer: Option<AccountId>
+
+definitions:
+  mapping: &mymapping
+    handlers:
+      - handler: handleCall
+        kind: substrate/CallHandler
+        filter:
+            module: utility
+            method: batchAll
+            success: true
+      - handler: handleCall
+        kind: substrate/CallHandler
+        filter:
+            module: utility
+            method: batch
+            success: true
+      - handler: handleCall
+        kind: substrate/CallHandler
+        filter:
+            module: system
+            method: remark
+            success: true
+      - handler: handleRemark
+        kind: substrate/CallHandler
+        filter:
+            module: utility
+            method: batchAll
+            success: true
+      - handler: handleRemark
+        kind: substrate/CallHandler
+        filter:
+            module: utility
+            method: batch
+            success: true
+      - handler: handleRemark
+        kind: substrate/CallHandler
+        filter:
+            module: system
+            method: remark
+            success: true  
+dataSources:
+  - name: main
+    kind: substrate/Runtime
+    startBlock: 2343264
+    mapping: *mymapping # can reuse or change
